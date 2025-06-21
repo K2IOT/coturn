@@ -1,4 +1,6 @@
 #!/bin/bash
+ROOT_DIR=$(git rev-parse --show-toplevel)
+echo "Root directory: $ROOT_DIR"
 
 # Kill all turnserver processes
 pkill -f "turnserver"
@@ -28,7 +30,7 @@ echo "📁 Going back to project root..."
 cd ..
 
 echo "🚀 Starting TURN server..."
-./build/bin/turnserver \
+$ROOT_DIR/build/bin/turnserver \
   --log-file=stdout \
   --verbose \
   --no-cli \
@@ -46,4 +48,4 @@ echo "🚀 Starting TURN server..."
 #   --fingerprint
 
 # Copy public key to src/jwt/public_key.pem
-cp /home/vht/vpn/coturn/src/jwt/public_key.pem src/jwt/public_key.pem
+cp $ROOT_DIR/src/jwt/public_key.pem src/jwt/public_key.pem
