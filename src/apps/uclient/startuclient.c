@@ -41,6 +41,7 @@
 #include "session.h"
 #include "startuclient.h"
 #include "uclient.h"
+#include "jwt/jwt_integration.h"
 
 #if defined(__MINGW32__)
 #ifndef usleep
@@ -420,6 +421,19 @@ beg_allocate:
 
     add_origin(&request_message);
 
+    // Add JWT token if provided
+    if (use_jwt_auth && g_jwt_token[0]) {
+      size_t len = request_message.len;
+      if (add_jwt_token_to_stun_msg(request_message.buf, &len, g_jwt_token) < 0) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to ALLOCATE request\n");
+        return -1;
+      }
+      request_message.len = len;
+      if (verbose) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to ALLOCATE request\n");
+      }
+    }
+
     if (add_integrity(clnet_info, &request_message) < 0) {
       return -1;
     }
@@ -672,6 +686,19 @@ beg_allocate:
 
       add_origin(&request_message);
 
+      // Add JWT token if provided
+      if (use_jwt_auth && g_jwt_token[0]) {
+        size_t len = request_message.len;
+        if (add_jwt_token_to_stun_msg(request_message.buf, &len, g_jwt_token) < 0) {
+          TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to REFRESH request\n");
+          return -1;
+        }
+        request_message.len = len;
+        if (verbose) {
+          TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to REFRESH request\n");
+        }
+      }
+
       if (add_integrity(clnet_info, &request_message) < 0) {
         return -1;
       }
@@ -764,6 +791,19 @@ beg_bind:
   }
 
   add_origin(&request_message);
+
+  // Add JWT token if provided
+  if (use_jwt_auth && g_jwt_token[0]) {
+    size_t len = request_message.len;
+    if (add_jwt_token_to_stun_msg(request_message.buf, &len, g_jwt_token) < 0) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to CHANNEL_BIND request\n");
+      return -1;
+    }
+    request_message.len = len;
+    if (verbose) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to CHANNEL_BIND request\n");
+    }
+  }
 
   if (add_integrity(clnet_info, &request_message) < 0) {
     return -1;
@@ -862,6 +902,19 @@ beg_cp:
   }
 
   add_origin(&request_message);
+
+  // Add JWT token if provided
+  if (use_jwt_auth && g_jwt_token[0]) {
+    size_t len = request_message.len;
+    if (add_jwt_token_to_stun_msg(request_message.buf, &len, g_jwt_token) < 0) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to CREATE_PERMISSION request\n");
+      return -1;
+    }
+    request_message.len = len;
+    if (verbose) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to CREATE_PERMISSION request\n");
+    }
+  }
 
   if (add_integrity(clnet_info, &request_message) < 0) {
     return -1;
@@ -1440,6 +1493,19 @@ int turn_tcp_connect(bool verbose, app_ur_conn_info *clnet_info, ioa_addr *peer_
 
     add_origin(&message);
 
+    // Add JWT token if provided
+    if (use_jwt_auth && g_jwt_token[0]) {
+      size_t len = message.len;
+      if (add_jwt_token_to_stun_msg(message.buf, &len, g_jwt_token) < 0) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to CONNECT request\n");
+        return -1;
+      }
+      message.len = len;
+      if (verbose) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to CONNECT request\n");
+      }
+    }
+
     if (add_integrity(clnet_info, &message) < 0) {
       return -1;
     }
@@ -1480,6 +1546,19 @@ beg_cb:
   stun_attr_add(&request_message, STUN_ATTRIBUTE_CONNECTION_ID, (const char *)&cid, 4);
 
   add_origin(&request_message);
+
+  // Add JWT token if provided
+  if (use_jwt_auth && g_jwt_token[0]) {
+    size_t len = request_message.len;
+    if (add_jwt_token_to_stun_msg(request_message.buf, &len, g_jwt_token) < 0) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Failed to add JWT token to CONNECTION_BIND request\n");
+      return -1;
+    }
+    request_message.len = len;
+    if (verbose) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT token added to CONNECTION_BIND request\n");
+    }
+  }
 
   if (add_integrity(clnet_info, &request_message) < 0) {
     return -1;

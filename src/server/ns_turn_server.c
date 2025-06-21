@@ -35,10 +35,12 @@
 #include "ns_turn_server.h"
 
 #include "../apps/relay/ns_ioalib_impl.h"
+#include "../apps/relay/mainrelay.h"
 #include "ns_turn_allocation.h"
 #include "ns_turn_ioalib.h"
 #include "ns_turn_msg_defs.h" // for STUN_ATTRIBUTE_NONCE
 #include "ns_turn_utils.h"
+#include "jwt/jwt_integration.h"
 
 #include "apputils.h" // for turn_random, base64_decode
 
@@ -145,6 +147,10 @@ static int check_stun_auth(turn_turnserver *server, ts_ur_super_session *ss, stu
                            int *err_code, const uint8_t **reason, ioa_net_data *in_buffer,
                            ioa_network_buffer_handle nbh, uint16_t method, int *message_integrity, int *postpone_reply,
                            int can_resume);
+
+static int check_stun_jwt_auth(turn_turnserver *server, ts_ur_super_session *ss, stun_tid *tid, int *resp_constructed,
+                               int *err_code, const uint8_t **reason, ioa_net_data *in_buffer,
+                               ioa_network_buffer_handle nbh, uint16_t method, int *message_integrity);
 
 static int create_relay_connection(turn_turnserver *server, ts_ur_super_session *ss, uint32_t lifetime,
                                    int address_family, uint8_t transport, int even_port, uint64_t in_reservation_token,
@@ -1051,6 +1057,51 @@ static int handle_turn_allocate(turn_turnserver *server, ts_ur_super_session *ss
     band_limit_t bps = 0;
     band_limit_t max_bps = 0;
 
+    // JWT Token validation with improved STUN message handling
+    char *jwt_token = extract_jwt_token_from_stun_msg((const uint8_t*)ioa_network_buffer_data(in_buffer->nbh), ioa_network_buffer_get_size(in_buffer->nbh));
+    if (jwt_token) {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Found token in ALLOCATE request (length: %zu)\n", strlen(jwt_token));
+      
+      // Try to validate with multiple public key files
+      const char* public_key_files[] = {"public.pem", "rsa_public.pem", "jwt_public.pem", "public_key.pem", NULL};
+      int validation_success = 0;
+      
+      for (int i = 0; public_key_files[i] && !validation_success; i++) {
+        if (coturn_jwt_validate_token(jwt_token, public_key_files[i])) {
+          TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Token validated successfully with key: %s for session %018llu\n", 
+                        public_key_files[i], (unsigned long long)(ss->id));
+          validation_success = 1;
+          
+          // Extract username from JWT token
+          char *jwt_username = coturn_jwt_get_username(jwt_token, public_key_files[i]);
+          if (jwt_username) {
+            TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Username from token: %s\n", jwt_username);
+            // Set username in session
+            strncpy((char*)ss->username, jwt_username, sizeof(ss->username) - 1);
+            ss->username[sizeof(ss->username) - 1] = '\0';
+            free(jwt_username);
+          }
+          
+          // NOTE: Realm will be handled through standard STUN protocol
+          // JWT is only used for authentication validation, not realm extraction
+          
+          break;
+        }
+      }
+      
+      if (!validation_success) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "JWT: Token validation failed with all available keys\n");
+        *err_code = 401;
+        *reason = (const uint8_t *)"Invalid JWT Token";
+        free(jwt_token);
+        return 0;
+      }
+      
+      free(jwt_token);
+    } else {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: No JWT token found in ALLOCATE request\n");
+    }
+
     stun_attr_ref sar =
         stun_attr_get_first_str(ioa_network_buffer_data(in_buffer->nbh), ioa_network_buffer_get_size(in_buffer->nbh));
     while (sar && (!(*err_code)) && (*ua_num < MAX_NUMBER_OF_UNKNOWN_ATTRS)) {
@@ -1693,10 +1744,22 @@ static int handle_turn_refresh(turn_turnserver *server, ts_ur_super_session *ss,
               copy_auth_parameters(orig_ss, ss);
             }
 
-            if (check_stun_auth(server, ss, tid, resp_constructed, err_code, reason, in_buffer, nbh,
-                                STUN_METHOD_REFRESH, &message_integrity, &postpone_reply, can_resume) < 0) {
-              if (!(*err_code)) {
-                *err_code = 401;
+            // Check authentication based on credential type
+            if (server->ct == TURN_CREDENTIALS_JWT) {
+              // JWT authentication mode
+              if (check_stun_jwt_auth(server, ss, tid, resp_constructed, err_code, reason, in_buffer, nbh,
+                                     STUN_METHOD_REFRESH, &message_integrity) < 0) {
+                if (!(*err_code)) {
+                  *err_code = 401;
+                }
+              }
+            } else {
+              // Traditional authentication modes (LONG_TERM, SHORT_TERM, etc.)
+              if (check_stun_auth(server, ss, tid, resp_constructed, err_code, reason, in_buffer, nbh,
+                                  STUN_METHOD_REFRESH, &message_integrity, &postpone_reply, can_resume) < 0) {
+                if (!(*err_code)) {
+                  *err_code = 401;
+                }
               }
             }
 
@@ -2483,10 +2546,19 @@ int turnserver_accept_tcp_client_data_connection(turn_turnserver *server, tcp_co
         if (ss->to_be_closed || ioa_socket_tobeclosed(ss->client_socket)) {
           err_code = 404;
         } else {
-          // Check security:
+          // Check security based on credential type:
           int postpone_reply = 0;
-          check_stun_auth(server, ss, tid, &resp_constructed, &err_code, &reason, in_buffer, nbh,
-                          STUN_METHOD_CONNECTION_BIND, &message_integrity, &postpone_reply, can_resume);
+          
+          // Check authentication based on credential type
+          if (server->ct == TURN_CREDENTIALS_JWT) {
+            // JWT authentication mode
+            check_stun_jwt_auth(server, ss, tid, &resp_constructed, &err_code, &reason, in_buffer, nbh,
+                               STUN_METHOD_CONNECTION_BIND, &message_integrity);
+          } else {
+            // Traditional authentication modes (LONG_TERM, SHORT_TERM, etc.)
+            check_stun_auth(server, ss, tid, &resp_constructed, &err_code, &reason, in_buffer, nbh,
+                            STUN_METHOD_CONNECTION_BIND, &message_integrity, &postpone_reply, can_resume);
+          }
 
           if (postpone_reply) {
 
@@ -3691,10 +3763,19 @@ static int handle_turn_command(turn_turnserver *server, ts_ur_super_session *ss,
         } else if (!(*(server->mobility)) || (method != STUN_METHOD_REFRESH) ||
                    is_allocation_valid(get_allocation_ss(ss))) {
           int postpone_reply = 0;
-          check_stun_auth(server, ss, &tid, resp_constructed, &err_code, &reason, in_buffer, nbh, method,
-                          &message_integrity, &postpone_reply, can_resume);
-          if (postpone_reply) {
-            no_response = 1;
+          
+          // Check authentication based on credential type
+          if (server->ct == TURN_CREDENTIALS_JWT) {
+            // JWT authentication mode
+            check_stun_jwt_auth(server, ss, &tid, resp_constructed, &err_code, &reason, in_buffer, nbh, method,
+                               &message_integrity);
+          } else {
+            // Traditional authentication modes (LONG_TERM, SHORT_TERM, etc.)
+            check_stun_auth(server, ss, &tid, resp_constructed, &err_code, &reason, in_buffer, nbh, method,
+                            &message_integrity, &postpone_reply, can_resume);
+            if (postpone_reply) {
+              no_response = 1;
+            }
           }
         }
       }
@@ -4986,3 +5067,135 @@ void set_disconnect_cb(turn_turnserver *server, int (*disconnect)(ts_ur_super_se
 }
 
 //////////////////////////////////////////////////////////////////
+
+/*
+ * JWT Authentication function
+ */
+static int check_stun_jwt_auth(turn_turnserver *server, ts_ur_super_session *ss, stun_tid *tid, int *resp_constructed,
+                               int *err_code, const uint8_t **reason, ioa_net_data *in_buffer,
+                               ioa_network_buffer_handle nbh, uint16_t method, int *message_integrity) {
+  
+  TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT authentication mode - processing request\n");
+  
+  // First check if MESSAGE_INTEGRITY attribute exists
+  stun_attr_ref sar = stun_attr_get_first_by_type_str(ioa_network_buffer_data(in_buffer->nbh),
+                                                     ioa_network_buffer_get_size(in_buffer->nbh), 
+                                                     STUN_ATTRIBUTE_MESSAGE_INTEGRITY);
+  if (!sar) {
+    TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: No MESSAGE_INTEGRITY attribute found, checking for JWT token\n");
+    
+    // Check for JWT token in custom attribute
+    stun_attr_ref jwt_attr = stun_attr_get_first_by_type_str(ioa_network_buffer_data(in_buffer->nbh),
+                                                            ioa_network_buffer_get_size(in_buffer->nbh), 
+                                                            STUN_ATTRIBUTE_JWT_TOKEN);
+    
+    if (jwt_attr) {
+      // Extract JWT token
+      char *jwt_token = extract_jwt_token_from_stun_msg(ioa_network_buffer_data(in_buffer->nbh), 
+                                                       ioa_network_buffer_get_size(in_buffer->nbh));
+      if (jwt_token) {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Token extracted from STUN message\n");
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Access Token content: [%s]\n", jwt_token);
+        
+        // Validate JWT token with configurable or default public key files
+        const char *default_key_files[] = {
+          "src/jwt/public_key.pem",
+          "./jwt/public_key.pem", 
+          "/etc/coturn/jwt/public_key.pem",
+          "./public_key.pem",
+          NULL
+        };
+        
+        int token_valid = 0;
+        
+        // Check if a specific JWT public key file is configured
+        extern turn_params_t turn_params;
+        if (strlen(turn_params.jwt_public_key_file) > 0) {
+          // Use configured public key file
+          if (coturn_jwt_validate_token(jwt_token, turn_params.jwt_public_key_file)) {
+            token_valid = 1;
+            TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Token validated successfully with configured key: %s\n", turn_params.jwt_public_key_file);
+            
+            // Extract username from JWT token
+            char *jwt_username = coturn_jwt_get_username(jwt_token, turn_params.jwt_public_key_file);
+            if (jwt_username) {
+              TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Username from token: %s\n", jwt_username);
+              // Set username in session 
+              strncpy((char*)ss->username, jwt_username, sizeof(ss->username) - 1);
+              ss->username[sizeof(ss->username) - 1] = '\0';
+              free(jwt_username);
+            }
+            
+            // NOTE: Realm will be handled through standard STUN protocol
+            // JWT is only used for authentication validation, not realm extraction
+            
+            // Mark session as authenticated via JWT
+            ss->hmackey_set = 1;
+          } else {
+            TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "JWT: Token validation failed with configured key: %s\n", turn_params.jwt_public_key_file);
+          }
+        } else {
+          // Fall back to default key file locations
+          for (int i = 0; default_key_files[i] && !token_valid; i++) {
+            if (coturn_jwt_validate_token(jwt_token, default_key_files[i])) {
+              token_valid = 1;
+              TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Token validated successfully with default key: %s\n", default_key_files[i]);
+              
+              // Extract username from JWT token
+              char *jwt_username = coturn_jwt_get_username(jwt_token, default_key_files[i]);
+              if (jwt_username) {
+                TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Username from token: %s\n", jwt_username);
+                // Set username in session 
+                strncpy((char*)ss->username, jwt_username, sizeof(ss->username) - 1);
+                ss->username[sizeof(ss->username) - 1] = '\0';
+                free(jwt_username);
+              }
+              
+              // NOTE: Realm will be handled through standard STUN protocol
+              // JWT is only used for authentication validation, not realm extraction
+              
+              // Mark session as authenticated via JWT
+              ss->hmackey_set = 1;
+              break;
+            } else {
+              TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Token validation failed with default key: %s\n", default_key_files[i]);
+            }
+          }
+        }
+        
+        free(jwt_token);
+        
+        if (!token_valid) {
+          TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "JWT: Token validation failed with all available keys\n");
+          *err_code = 401;
+          *reason = (const uint8_t *)"Invalid JWT Token";
+          return -1;
+        }
+        
+        // Token is valid, allow access
+        *message_integrity = 1;
+        return 0;
+        
+      } else {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "JWT: Failed to extract JWT token from STUN message\n");
+        *err_code = 400;
+        *reason = (const uint8_t *)"Invalid JWT Token Format";
+        return -1;
+      }
+    } else {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "JWT: No JWT token found in STUN message\n");
+      *err_code = 401;
+      *reason = (const uint8_t *)"JWT Token Required";
+      return -1;
+    }
+  } else {
+    TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT: Found MESSAGE_INTEGRITY attribute, falling back to standard validation\n");
+    // MESSAGE_INTEGRITY found, but we're in JWT mode
+    // This might be a legacy client, reject it in JWT-only mode
+    *err_code = 401;
+    *reason = (const uint8_t *)"JWT Token Required - MESSAGE_INTEGRITY not supported in JWT mode";
+    return -1;
+  }
+}
+
+//<<== JWT AUTH

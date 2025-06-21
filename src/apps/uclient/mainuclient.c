@@ -35,6 +35,7 @@
 #include "ns_turn_utils.h"
 #include "session.h"
 #include "uclient.h"
+#include "jwt/jwt_integration.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,6 +67,10 @@ password_t g_upwd;
 char g_auth_secret[1025] = "\0";
 bool g_use_auth_secret_with_timestamp = false;
 bool use_fingerprints = true;
+
+// JWT Token variable
+char g_jwt_token[STUN_MAX_JWT_TOKEN_SIZE + 1] = "\0";
+bool use_jwt_auth = false;
 
 static char ca_cert_file[1025] = "";
 static char cipher_suite[1025] = "";
@@ -156,6 +161,7 @@ static char Usage[] =
     "	-C	TURN REST API timestamp/username separator symbol (character). The default value is ':'.\n"
     "	-F	<cipher-suite> Cipher suite for TLS/DTLS. Default value is DEFAULT.\n"
     "	-o	<origin> - the ORIGIN STUN attribute value.\n"
+    "	-A	<jwt-token> JWT Token for authentication (max 800 bytes).\n"
     "	-a	<bytes-per-second> Bandwidth for the bandwidth request in ALLOCATE. The default value is zero.\n";
 
 //////////////////////////////////////////////////
@@ -199,7 +205,7 @@ int main(int argc, char **argv) {
 
   memset(local_addr, 0, sizeof(local_addr));
 
-  while ((c = getopt(argc, argv, "a:d:p:l:n:L:m:e:r:u:w:i:k:z:W:C:E:F:o:bZvsyhcxXgtTSAPDNOUMRIGBJ")) != -1) {
+  while ((c = getopt(argc, argv, "A:a:d:p:l:n:L:m:e:r:u:w:i:k:z:W:C:E:F:o:bZvsyhcxXgtTSAPDNOUMRIGBJ")) != -1) {
     switch (c) {
     case 'J': {
 
@@ -377,6 +383,10 @@ int main(int argc, char **argv) {
       STRCPY(pkey_file, fn);
       free(fn);
     } break;
+    case 'A':
+      STRCPY(g_jwt_token, optarg);
+      use_jwt_auth = true;
+      break;
     default:
       fprintf(stderr, "%s\n", Usage);
       exit(1);

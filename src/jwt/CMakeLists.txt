@@ -44,7 +44,8 @@ pkg_check_modules(JANSSON jansson)
 pkg_check_modules(CJSON libcjson)
 
 set(SOURCE_FILES
-    rs256.c
+        rs256.c
+    jwt_integration_simple.c
 )
 
 set(HEADER_FILES

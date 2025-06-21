@@ -58,4 +58,12 @@
 #define STUN_ATTRIBUTE_ADDITIONAL_ADDRESS_FAMILY (0x8032)
 #define STUN_ATTRIBUTE_ADDRESS_ERROR_CODE (0x8033)
 
+////////////// JWT CUSTOM ///////////////////
+
+// Custom JWT Token Attribute (800 byte max)
+#define STUN_ATTRIBUTE_JWT_TOKEN (0x8040)
+#define STUN_MAX_JWT_TOKEN_SIZE (800)
+
+/* <<== JWT CUSTOM */
+
 #endif //__LIB_TURN_MSG_DEFS_NEW__

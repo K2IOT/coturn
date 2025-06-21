@@ -122,6 +122,7 @@ TURN authentication mechanisms:
   * 'classic' long-term credentials mechanism;
   * TURN REST API (a modification of the long-term mechanism, for time-limited secret-based authentication, for WebRTC applications: http://tools.ietf.org/html/draft-uberti-behave-turn-rest-00);
   * experimental third-party oAuth-based client authorization option;
+  * **JWT (JSON Web Token) authentication** - RS256 signature validation with custom STUN attribute (0x8040);
 
 Performance and Load Balancing:
 
@@ -155,6 +156,149 @@ To achieve high performance and scalability, the TURN server is implemented with
   * The TURN project code can be used in a custom proprietary networking environment. In the TURN server code, an abstract networking API is used. Only couple files in the project have to be re-written to plug-in the TURN server into a proprietary environment. With this project, only implementation for standard UNIX Networking/IO API is provided, but the  user can implement any other environment. The TURN server code was originally developed for a high-performance proprietary corporate environment, then adopted for UNIX Networking API
   * The TURN server works as a user space process, without imposing any special requirements on the system
 
+
+## JWT Authentication Usage
+
+### Overview
+
+Coturn supports JWT (JSON Web Token) authentication using RS256 signatures. JWT tokens are transmitted via a custom STUN attribute (0x8040) supporting tokens up to 400 bytes.
+
+### 1. Key Generation
+
+Generate RSA key pairs for JWT signing and validation:
+
+```bash
+cd src/jwt
+./generate_sample_keys.sh
+```
+
+This creates:
+- `private_key.pem` - Private key for token signing
+- `public.pem` - Public key for token validation
+
+### 2. JWT Token Format
+
+JWT tokens should include these claims:
+```json
+{
+  "username": "testuser",
+  "iss": "coturn-server",
+  "aud": "coturn-client",
+  "iat": 1609459200,
+  "exp": 1609462800
+}
+```
+
+**Important**: 
+- JWT tokens are used **only for authentication validation**, not for realm information
+- Realm is handled through standard STUN protocol attributes as in traditional TURN authentication
+- The `realm` claim in JWT is optional and will be ignored - use server's `-r` option to set realm
+
+### 3. Server Configuration
+
+Start the TURN server with JWT authentication:
+
+```bash
+# Basic JWT server
+./turnserver --jwt=1 -v -r turn
+
+# With specific listening configuration
+./turnserver --jwt=1 -v -r turn -L 127.0.0.1 --listening-port 3478
+
+# Background mode
+./turnserver --jwt=1 -v -r turn -L 127.0.0.1 --listening-port 3478 &
+```
+
+**Key Requirements:**
+- Place public key files in one of these locations:
+  - `src/jwt/public.pem`
+  - `./jwt/public_key.pem` 
+  - `/etc/coturn/jwt/public_key.pem`
+  - `./public_key.pem`
+
+### 4. Client Usage
+
+Use `turnutils_uclient` with JWT authentication:
+
+```bash
+# Basic JWT client
+./turnutils_uclient -A "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..." -v -y 127.0.0.1
+
+# With specific port
+./turnutils_uclient -A "your_jwt_token_here" -v -p 3478 -y 127.0.0.1
+
+# Complete example
+./turnutils_uclient -A "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwicmVhbG0iOiJ0ZXN0cmVhbG0iLCJpc3MiOiJjb3R1cm4tc2VydmVyIiwiYXVkIjoiY290dXJuLWNsaWVudCJ9.signature" -v -y 127.0.0.1
+```
+
+### 5. JWT Integration Features
+
+- **Custom STUN Attribute**: JWT tokens use STUN attribute 0x8040
+- **Multiple Key Support**: Automatic fallback across multiple public key files  
+- **Username Extraction**: Automatic extraction from JWT claims
+- **STUN Protocol Realm**: Realm handled via standard STUN protocol (not from JWT)
+- **RS256 Validation**: Secure signature validation with OpenSSL
+- **Error Handling**: Comprehensive error messages and logging
+
+### 6. Building with JWT Support
+
+```bash
+# Build the complete project
+cd coturn
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+
+# JWT library will be automatically built as 'turnjwt'
+# Server binary: build/bin/turnserver
+# Client binary: build/bin/turnutils_uclient
+```
+
+### 7. Testing JWT Implementation
+
+```bash
+# 1. Generate keys
+cd src/jwt && ./generate_sample_keys.sh
+
+# 2. Start server in one terminal
+./build/bin/turnserver --jwt=1 -v -r turn -L 127.0.0.1
+
+# 3. Test client in another terminal
+./build/bin/turnutils_uclient -A "test_jwt_token" -v -y 127.0.0.1
+```
+
+### 8. JWT Log Messages
+
+When JWT authentication is working, you'll see these log messages:
+
+**Server side:**
+```
+JWT authentication mode enabled
+JWT: Token extracted from STUN message
+JWT: Token validated successfully with key: src/jwt/public.pem
+JWT: Username from token: testuser
+NOTE: Realm will be handled through standard STUN protocol
+```
+
+**Client side:**
+```
+JWT: Successfully added token to STUN message (length: 256)
+JWT token added to ALLOCATE request
+```
+
+### 9. Troubleshooting JWT
+
+**Common Issues:**
+- **"JWT Token Required"**: Server is in JWT mode but no token provided
+- **"Invalid JWT Token"**: Token signature validation failed
+- **"No realm in token (this is expected - use STUN realm instead)"**: Normal behavior - realm comes from STUN protocol
+- **"Connection refused"**: Server not running or wrong port
+
+**Debug Steps:**
+1. Verify public key files are in correct locations
+2. Check server is started with `--jwt=1` option
+3. Ensure JWT token is properly formatted
+4. Check server logs for detailed error messages
 
 ## Links
 

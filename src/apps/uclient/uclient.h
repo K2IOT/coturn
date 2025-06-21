@@ -90,6 +90,10 @@ extern char origin[STUN_MAX_ORIGIN_SIZE + 1];
 extern int oauth;
 extern oauth_key okey_array[3];
 
+// JWT Authentication variables
+extern char g_jwt_token[STUN_MAX_JWT_TOKEN_SIZE + 1];
+extern bool use_jwt_auth;
+
 #define UCLIENT_SESSION_LIFETIME (777)
 #define OAUTH_SESSION_LIFETIME (555)
 

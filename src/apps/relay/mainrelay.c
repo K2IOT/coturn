@@ -229,6 +229,7 @@ turn_params_t turn_params = {
     ///////// Encryption /////////
     "",                                     /* secret_key_file */
     "",                                     /* secret_key */
+    "",                                     /* jwt_public_key_file */
     ALLOCATION_DEFAULT_ADDRESS_FAMILY_IPV4, /* allocation_default_address_family */
     false,                                  /* no_auth_pings */
     false,                                  /* no_dynamic_ip_list */
@@ -1495,6 +1496,8 @@ enum EXTRA_OPTS {
   ADMIN_USER_QUOTA_OPT,
   SERVER_NAME_OPT,
   OAUTH_OPT,
+  JWT_OPT,
+  JWT_PUBLIC_KEY_OPT,
   SOFTWARE_ATTRIBUTE_OPT,
   DEPRECATED_NO_SOFTWARE_ATTRIBUTE_OPT,
   NO_HTTP_OPT,
@@ -1572,6 +1575,8 @@ static const struct myoption long_options[] = {
     {"realm", required_argument, NULL, 'r'},
     {"server-name", required_argument, NULL, SERVER_NAME_OPT},
     {"oauth", optional_argument, NULL, OAUTH_OPT},
+    {"jwt", optional_argument, NULL, JWT_OPT},
+    {"jwt-public-key", required_argument, NULL, JWT_PUBLIC_KEY_OPT},
     {"user-quota", required_argument, NULL, 'q'},
     {"total-quota", required_argument, NULL, 'Q'},
     {"max-bps", required_argument, NULL, 's'},
@@ -1911,6 +1916,19 @@ static void set_option(int c, char *value) {
     } else {
       turn_params.oauth = get_bool_value(value);
     }
+    break;
+  case JWT_OPT:
+    if (get_bool_value(value)) {
+      turn_params.ct = TURN_CREDENTIALS_JWT;
+      use_lt_credentials = 1;
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT authentication mode enabled\n");
+    } else {
+      TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT authentication mode disabled\n");
+    }
+    break;
+  case JWT_PUBLIC_KEY_OPT:
+    STRCPY(turn_params.jwt_public_key_file, value);
+    TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "JWT public key file set to: %s\n", value);
     break;
   case ENABLE_TLSV1_OPT:
     turn_params.enable_tlsv1 = get_bool_value(value);
@@ -2806,7 +2824,7 @@ static void print_features(unsigned long mfn) {
      Frost stepped forward and opened the polished case with a theatrical
      flourish. It was a masterful piece of craftsmanship. As the lid was
      pulled back, the many trays inside lifted and fanned out, displaying
-     Glokta’s tools in all their gruesome glory. There were blades of every
+     Glokta's tools in all their gruesome glory. There were blades of every
      size and shape, needles curved and straight, bottles of oil and acid,
      nails and screws, clamps and pliers, saws, hammers, chisels. Metal, wood
      and glass glittered in the bright lamplight, all polished to mirror

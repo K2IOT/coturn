@@ -1,0 +1,342 @@
+🧹 Cleaning build directory...
+🔨 Creating build directory and configuring...
+⚙️ Running cmake configuration...
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+BUILD_VERSION:4.7.0-r0-9-gd3ff8a6;
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2") found components: Crypto SSL 
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2") 
+-- Checking for module 'libjwt'
+--   Found libjwt, version 1.10.2
+-- Checking for module 'jansson'
+--   Found jansson, version 2.13.1
+-- Checking for module 'libcjson'
+--   Found libcjson, version 1.7.15
+JWT_LIBS: OpenSSL::SSL;OpenSSL::Crypto;-L/usr/lib/x86_64-linux-gnu;-ljwt;-L/usr/lib/x86_64-linux-gnu;-ljansson;-L/usr/lib/x86_64-linux-gnu;-lcjson
+JWT_DEFINED: HAVE_LIBJWT;HAVE_JANSSON;HAVE_CJSON
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Could NOT find Libevent (missing: Libevent_DIR)
+-- Found Libevent: /usr/lib/x86_64-linux-gnu/libevent_core.so;/usr/lib/x86_64-linux-gnu/libevent_extra.so;/usr/lib/x86_64-linux-gnu/libevent_openssl.so;/usr/lib/x86_64-linux-gnu/libevent_pthreads.so;/usr/lib/x86_64-linux-gnu/libevent.so  
+COMMON_LIBS:OpenSSL::SSL;OpenSSL::Crypto;Threads::Threads;/usr/lib/x86_64-linux-gnu/libevent_core.so;/usr/lib/x86_64-linux-gnu/libevent_extra.so;/usr/lib/x86_64-linux-gnu/libevent_openssl.so;/usr/lib/x86_64-linux-gnu/libevent_pthreads.so;/usr/lib/x86_64-linux-gnu/libevent.so
+-- Looking for pthread_barrier_init
+-- Looking for pthread_barrier_init - found
+-- Found SQLite: /usr/include (found version "3.37.2")  
+-- Found PostgreSQL: /usr/include/postgresql (found version "14.18 (Ubuntu 14.18-0ubuntu0.22.04.1)")  
+-- Found MySQL: /usr/include/mysql (found version "8.0.42")  
+CMake Warning at src/apps/relay/CMakeLists.txt:120 (find_package):
+  By not providing "Findmongo.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "mongo", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "mongo" with any of
+  the following names:
+
+    mongoConfig.cmake
+    mongo-config.cmake
+
+  Add the installation prefix of "mongo" to CMAKE_PREFIX_PATH or set
+  "mongo_DIR" to a directory containing one of the above files.  If "mongo"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- Checking for module 'hiredis'
+--   Found hiredis, version 0.14.1
+CMake Warning at src/apps/relay/CMakeLists.txt:140 (find_package):
+  By not providing "Findlibsystemd.cmake" in CMAKE_MODULE_PATH this project
+  has asked CMake to find a package configuration file provided by
+  "libsystemd", but CMake did not find one.
+
+  Could not find a package configuration file provided by "libsystemd" with
+  any of the following names:
+
+    libsystemdConfig.cmake
+    libsystemd-config.cmake
+
+  Add the installation prefix of "libsystemd" to CMAKE_PREFIX_PATH or set
+  "libsystemd_DIR" to a directory containing one of the above files.  If
+  "libsystemd" provides a separate development package or SDK, be sure it has
+  been installed.
+
+
+-- Found Prometheus: /usr/lib/libprom.so  
+turnserver_LIBS:SQLite::sqlite;PostgreSQL::pq;MySQL::mysql;PkgConfig::HIREDIS;/usr/lib/libprom.so;/usr/lib/x86_64-linux-gnu/libmicrohttpd.so
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vht/vpn/coturn/build
+🏗️ Building project...
+[  2%] Building C object src/jwt/CMakeFiles/turnjwt.dir/rs256.c.o
+[  4%] Building C object src/apps/common/CMakeFiles/turncommon.dir/apputils.c.o
+[  6%] Building C object src/jwt/CMakeFiles/turnjwt.dir/jwt_integration_simple.c.o
+[  8%] Building C object src/apps/common/CMakeFiles/turncommon.dir/stun_buffer.c.o
+[ 10%] Building C object src/apps/common/CMakeFiles/turncommon.dir/ns_turn_utils.c.o
+[ 12%] Linking C static library ../../lib/libturnjwt.a
+[ 14%] Linking C static library ../../../lib/libturncommon.a
+[ 14%] Built target turnjwt
+[ 14%] Built target turncommon
+[ 16%] Building C object src/client/CMakeFiles/turnclient.dir/ns_turn_ioaddr.c.o
+[ 18%] Building C object src/client/CMakeFiles/turnclient.dir/ns_turn_msg_addr.c.o
+[ 20%] Building C object src/client/CMakeFiles/turnclient.dir/ns_turn_msg.c.o
+[ 22%] Linking C static library ../../lib/libturnclient.a
+[ 22%] Built target turnclient
+[ 24%] Building C object src/server/CMakeFiles/turn_server.dir/ns_turn_allocation.c.o
+[ 26%] Building C object src/server/CMakeFiles/turn_server.dir/ns_turn_server.c.o
+[ 28%] Building C object src/server/CMakeFiles/turn_server.dir/ns_turn_maps_rtcp.c.o
+[ 30%] Building C object src/apps/oauth/CMakeFiles/turnutils_oauth.dir/oauth.c.o
+[ 32%] Building C object src/server/CMakeFiles/turn_server.dir/ns_turn_maps.c.o
+[ 34%] Building C object src/apps/peer/CMakeFiles/turnutils_peer.dir/mainudpserver.c.o
+[ 36%] Building C object src/apps/peer/CMakeFiles/turnutils_peer.dir/udpserver.c.o
+[ 38%] Building C object src/apps/stunclient/CMakeFiles/turnutils_stunclient.dir/stunclient.c.o
+[ 40%] Building C object src/apps/uclient/CMakeFiles/turnutils_uclient.dir/uclient.c.o
+[ 42%] Building C object src/apps/uclient/CMakeFiles/turnutils_uclient.dir/startuclient.c.o
+[ 44%] Building C object src/apps/rfc5769/CMakeFiles/turnutils_rfc5769check.dir/rfc5769check.c.o
+[ 46%] Building C object src/apps/uclient/CMakeFiles/turnutils_uclient.dir/mainuclient.c.o
+[ 48%] Building C object src/apps/natdiscovery/CMakeFiles/turnutils_natdiscovery.dir/natdiscovery.c.o
+[ 50%] Linking C executable ../../../bin/turnutils_oauth
+[ 52%] Linking C executable ../../../bin/turnutils_peer
+[ 54%] Linking C executable ../../../bin/turnutils_stunclient
+[ 56%] Linking C executable ../../../bin/turnutils_rfc5769check
+[ 58%] Linking C executable ../../../bin/turnutils_uclient
+[ 60%] Linking C executable ../../../bin/turnutils_natdiscovery
+[ 62%] Linking C static library ../../lib/libturn_server.a
+[ 62%] Built target turnutils_oauth
+[ 62%] Built target turnutils_peer
+[ 62%] Built target turnutils_stunclient
+[ 62%] Built target turnutils_rfc5769check
+[ 62%] Built target turnutils_natdiscovery
+[ 62%] Built target turnutils_uclient
+[ 62%] Built target turn_server
+[ 64%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/netengine.c.o
+[ 66%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/http_server.c.o
+[ 68%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/mainrelay.c.o
+[ 70%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/tls_listener.c.o
+[ 72%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/turn_admin_server.c.o
+[ 74%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/acme.c.o
+[ 76%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/turn_ports.c.o
+[ 78%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dbdrivers/dbdriver.c.o
+[ 80%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dbdrivers/dbd_sqlite.c.o
+[ 82%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dtls_listener.c.o
+[ 84%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dbdrivers/dbd_redis.c.o
+[ 86%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/ns_ioalib_engine_impl.c.o
+[ 88%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/userdb.c.o
+[ 90%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/prom_server.c.o
+[ 92%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dbdrivers/dbd_pgsql.c.o
+[ 94%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/libtelnet.c.o
+/home/vht/vpn/coturn/src/apps/relay/prom_server.c: In function ‘promhttp_handler’:
+/home/vht/vpn/coturn/src/apps/relay/prom_server.c:90:10: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+   90 |     body = prom_collector_registry_bridge(PROM_COLLECTOR_REGISTRY_DEFAULT);
+      |          ^
+[ 96%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/dbdrivers/dbd_mysql.c.o
+[ 98%] Building C object src/apps/relay/CMakeFiles/turnserver.dir/hiredis_libevent2.c.o
+[100%] Linking C executable ../../../bin/turnserver
+[100%] Built target turnserver
+[100%] Built target turnadmin
+📁 Going back to project root...
+🚀 Starting TURN server...
+0: (3690353): WARNING: Cannot find config file: turnserver.conf. Default and command-line settings will be used.
+0: (3690353): INFO: System cpu num is 16
+0: (3690353): INFO: System enable num is 16
+0: (3690353): INFO: JWT authentication mode enabled
+0: (3690353): INFO: JWT public key file set to: /home/vht/vpn/coturn/src/jwt/public_key.pem
+0: (3690353): INFO: Coturn Version Coturn-4.7.0 'Gorst'
+0: (3690353): INFO: Max number of open files/sockets allowed for this process: 1048576
+0: (3690353): INFO: Due to the open files/sockets limitation, max supported number of TURN Sessions possible is: 524000 (approximately)
+0: (3690353): INFO: 
+
+==== Show him the instruments, Practical Frost: ====
+
+0: (3690353): INFO: OpenSSL compile-time version: OpenSSL 3.0.2 15 Mar 2022 (0x30000020)
+0: (3690353): INFO: TLS 1.2 supported
+0: (3690353): INFO: TLS 1.3 supported
+0: (3690353): INFO: DTLS 1.2 supported
+0: (3690353): INFO: TURN/STUN ALPN supported
+0: (3690353): INFO: Third-party authorization (oAuth) supported
+0: (3690353): INFO: GCM (AEAD) supported
+0: (3690353): INFO: SQLite supported, default database location is TURNDB
+0: (3690353): INFO: Redis supported
+0: (3690353): INFO: PostgreSQL supported
+0: (3690353): INFO: MySQL supported
+0: (3690353): INFO: MongoDB is not supported
+0: (3690353): INFO: Default Net Engine version: 3 (UDP thread per CPU core)
+0: (3690353): INFO: Domain name: 
+0: (3690353): INFO: Default realm: camipc.viettel.ai
+0: (3690353): WARNING: CONFIG: allow_loopback_peers opens a possible security vulnerability. Do not use in production!!
+0: (3690353): INFO: Certificate file found: /home/vht/vpn/coturn/turn_server_cert.pem
+0: (3690353): INFO: Private key file found: /home/vht/vpn/coturn/turn_server_pkey.pem
+0: (3690353): WARNING: NO EXPLICIT LISTENER ADDRESS(ES) ARE CONFIGURED
+0: (3690353): INFO: ===========Discovering listener addresses: =========
+0: (3690353): INFO: Listener address to use: 127.0.0.1
+0: (3690353): INFO: Listener address to use: 172.19.31.119
+0: (3690353): INFO: Listener address to use: 192.168.65.134
+0: (3690353): INFO: Listener address to use: 172.18.0.1
+0: (3690353): INFO: Listener address to use: 172.17.0.1
+0: (3690353): INFO: Listener address to use: ::1
+0: (3690353): INFO: =====================================================
+0: (3690353): INFO: Total: 4 'real' addresses discovered
+0: (3690353): INFO: =====================================================
+0: (3690353): WARNING: NO EXPLICIT RELAY ADDRESS(ES) ARE CONFIGURED
+0: (3690353): INFO: ===========Discovering relay addresses: =============
+0: (3690353): INFO: Relay address to use: 172.19.31.119
+0: (3690353): INFO: Relay address to use: 192.168.65.134
+0: (3690353): INFO: Relay address to use: 172.18.0.1
+0: (3690353): INFO: Relay address to use: 172.17.0.1
+0: (3690353): INFO: Relay address to use: ::1
+0: (3690353): INFO: =====================================================
+0: (3690353): INFO: Total: 5 relay addresses discovered
+0: (3690353): INFO: =====================================================
+0: (3690353): WARNING: Cannot create pid file: /var/run/turnserver.pid
+0: (3690353): INFO: pid file created: /var/tmp/turnserver.pid
+0: (3690353): INFO: IO method: epoll (with changelist)
+0: (3690353): INFO: RFC5780 disabled! /NAT behavior discovery/
+0: (3690353): INFO: Wait for relay ports initialization...
+0: (3690353): INFO:   relay 172.19.31.119 initialization...
+0: (3690353): INFO:   relay 172.19.31.119 initialization done
+0: (3690353): INFO:   relay 192.168.65.134 initialization...
+0: (3690353): INFO:   relay 192.168.65.134 initialization done
+0: (3690353): INFO:   relay 172.18.0.1 initialization...
+0: (3690353): INFO:   relay 172.18.0.1 initialization done
+0: (3690353): INFO:   relay 172.17.0.1 initialization...
+0: (3690353): INFO:   relay 172.17.0.1 initialization done
+0: (3690353): INFO:   relay ::1 initialization...
+0: (3690353): INFO:   relay ::1 initialization done
+0: (3690353): INFO: Relay ports initialization done
+0: (3690359): DEBUG: turn server id=0 created
+0: (3690359): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690360): DEBUG: turn server id=1 created
+0: (3690359): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690360): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690361): DEBUG: turn server id=2 created
+0: (3690359): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690362): DEBUG: turn server id=3 created
+0: (3690359): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690361): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690362): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690361): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690363): DEBUG: turn server id=4 created
+0: (3690360): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690362): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690362): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690359): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690361): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690362): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690361): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690360): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690361): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690360): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690359): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690364): DEBUG: turn server id=5 created
+0: (3690360): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690364): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690360): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690361): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690364): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690362): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690362): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690364): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690365): DEBUG: turn server id=6 created
+0: (3690365): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690364): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690365): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690364): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690365): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690364): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690366): DEBUG: turn server id=7 created
+0: (3690363): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690366): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690363): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690366): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690367): DEBUG: turn server id=8 created
+0: (3690363): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690363): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690366): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690363): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690363): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690367): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690366): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690366): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690367): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690366): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690365): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690367): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690365): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690367): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690365): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690367): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690367): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690368): DEBUG: turn server id=9 created
+0: (3690368): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690368): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690368): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690369): DEBUG: turn server id=10 created
+0: (3690368): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690369): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690369): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690369): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690370): DEBUG: turn server id=11 created
+0: (3690371): DEBUG: turn server id=12 created
+0: (3690369): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690368): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690368): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690353): INFO: Total General servers: 16
+0: (3690371): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690372): DEBUG: turn server id=13 created
+0: (3690371): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690370): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690372): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690373): DEBUG: turn server id=14 created
+0: (3690374): DEBUG: turn server id=15 created
+0: (3690370): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690373): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690353): INFO: IPv4. UDP listener opened on: 127.0.0.1:3478
+0: (3690374): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (3690371): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690371): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690370): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690372): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690371): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690371): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690374): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690373): INFO: IPv4. TCP listener opened on : 172.19.31.119:3478
+0: (3690374): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690370): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690369): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690372): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690373): INFO: IPv4. TCP listener opened on : 192.168.65.134:3478
+0: (3690372): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690373): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690372): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690373): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690373): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690353): INFO: IPv4. UDP listener opened on: 172.19.31.119:3478
+0: (3690370): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690370): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690374): INFO: IPv4. TCP listener opened on : 172.18.0.1:3478
+0: (3690374): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (3690374): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690372): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690353): INFO: IPv4. UDP listener opened on: 192.168.65.134:3478
+0: (3690369): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (3690353): INFO: IPv4. UDP listener opened on: 172.18.0.1:3478
+0: (3690353): INFO: IPv4. UDP listener opened on: 172.17.0.1:3478
+0: (3690353): INFO: IPv6. UDP listener opened on: ::1:3478
+0: (3690353): INFO: Total auth threads: 9
+0: (3690353): INFO: prometheus collector disabled, not started
+202: (3690371): INFO: JWT authentication mode - processing request
+202: (3690371): INFO: JWT: No MESSAGE_INTEGRITY attribute found, checking for JWT token
+JWT: Successfully extracted token from STUN message (length: 743)
+202: (3690371): INFO: JWT: Token extracted from STUN message
+202: (3690371): INFO: JWT: Access Token content: [eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI2NzJhZTIzZDY1OWE4MzdkZGM2ZTE4N2MiLCJhcHBsaWNhdGlvblR5cGUiOiJNT0JJTEUiLCJwcm9qZWN0Um9sZXMiOlsiR1JPVVBfVVNFUiJdLCJwaG9uZSI6IjAwMSIsInN5c3RlbVJvbGVzIjpbIlNZU1RFTV9VU0VSIl0sInByb2plY3RVc2VySWQiOiI2NzJhZTIzZDY1OWE4MzdkZGM2ZTE4N2IiLCJwcm9qZWN0SWQiOiI2
