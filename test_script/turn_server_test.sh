@@ -44,8 +44,8 @@ $ROOT_DIR/build/bin/turnserver \
   --min-port=10000 \
   --max-port=65535 \
   --syslog \
-  --allow-loopback-peers 
-#   --fingerprint
+  --allow-loopback-peers \
+  --fingerprint
 
 # Copy public key to src/jwt/public_key.pem
 cp $ROOT_DIR/src/jwt/public_key.pem src/jwt/public_key.pem
