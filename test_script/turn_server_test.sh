@@ -41,7 +41,7 @@ $ROOT_DIR/build/bin/turnserver \
   --no-dtls \
   --realm=camipc.viettel.ai \
   --jwt=1 \
-  --jwt-public-key=$ROOT_DIR/test_script/public_key.pem \
+  --jwt-public-key=src/jwt/public_key.pem \
   --listening-port=3478 \
   --tls-listening-port=5349 \
   --min-port=10000 \
