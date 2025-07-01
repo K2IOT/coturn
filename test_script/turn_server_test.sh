@@ -11,6 +11,9 @@ pkill -f "turnutils_uclient"
 # Wait for processes to be killed
 sleep 1
 
+# Return to root directory
+cd $ROOT_DIR
+
 # Clean and rebuild the project
 echo "🧹 Cleaning build directory..."
 rm -rf build/
@@ -38,7 +41,7 @@ $ROOT_DIR/build/bin/turnserver \
   --no-dtls \
   --realm=camipc.viettel.ai \
   --jwt=1 \
-  --jwt-public-key=src/jwt/public_key.pem \
+  --jwt-public-key=$ROOT_DIR/test_script/public_key.pem \
   --listening-port=3478 \
   --tls-listening-port=5349 \
   --min-port=10000 \
@@ -48,4 +51,4 @@ $ROOT_DIR/build/bin/turnserver \
   --fingerprint
 
 # Copy public key to src/jwt/public_key.pem
-cp $ROOT_DIR/src/jwt/public_key.pem src/jwt/public_key.pem
+# cp $ROOT_DIR/src/jwt/public_key.pem src/jwt/public_key.pem
